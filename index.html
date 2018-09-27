@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+    <style>
+	
+	/* Format for rectangles */
+      rect {
+        fill: rgb(0,0,255);
+        stroke: black;
+        stroke-width: 0.7;
+        opacity: 0.7;
+      }
+	/* Format for headers */
+      h2 {
+        text-align: center;
+        color: gray;
+      }
+	  .title text {
+		font-family: arial;
+		font-size: 10px;
+	  }
+	/* Format for axes */
+	  .axis path,
+	  .axis line {
+		fill: none;
+		stroke: gray;
+		shape-rendering: crispEdges;
+	  }
+	  .axis text {
+		font-family: arial;
+		font-size: 8px;
+	  }
+    </style>
+    <script type="text/javascript">  
+	  // The function animates the data and also allows the user
+	  // to select a time period for display from a dropdown list
+      function draw(gender_data) {
+        "use strict";
+		var margin = 100,
+			width = 1200 - margin,
+			height = 550 - margin;
+		/* Creating a separate array variable for the drop down list */
+		var quart_option = [];
+		var quart_option = gender_data.map( function(d) {
+			return d['Period'];
+			}
+			);
+		/* Header for the chart */
+		d3.select("body")
+			  .append("h2")
+			  .text("Manager Count and Earnings US 2008 - 2018");
+		
+		/* Create the dropdown list */
+		var select = d3.select('body')
+			.append('select')
+			.attr('class','select')
+			.on('change',onselect);
+			
+		/* Create a canvas for the graph */
+		var svg = d3.select("body")
+				.append("svg")
+				.attr("width", width + margin )
+				.attr("height", height + margin );
+				
+		/* Create scales for 3 axes - positive x axis, y axis and negative x axis */
+		/* Scales are static based on the max and min values observed */
+		var Xscale = d3.scale.linear().domain([0,25000]).range([0,300]);
+		var Yscale = d3.scale.linear().domain([0,1500]).range([0,-400]);
+		var nXscale = d3.scale.linear().domain([0,25000]).range([0,-300]);
+		
+		/* Create the 3 axes */
+		var xAxis = d3.svg.axis().scale(Xscale).orient("bottom");
+		var yAxis = d3.svg.axis().scale(Yscale).orient("left");
+		var wXAxis = d3.svg.axis().scale(nXscale).orient("bottom");
+
+		/* Display the X axis, rotate labels by 90 deg for convenient viewing */
+		/* X axis shows the count of men managers in the US*/
+		var XAxis = svg.append('g')
+			.attr("class","axis")
+			.attr('transform', "translate(" + width/2 + "," + height + ")" + "rotate(" + 0 + "," + 0 + "," + 0 + ")")
+			.call(xAxis)
+			.selectAll("text")
+			.attr("transform","rotate(90)")
+			.attr("x","10")
+			.attr("y","0")
+			.style("text-anchor","start");
+			
+		/* Display the Y axis */
+		/* Y axis displays the weekly pay for men and women */
+		var YAxis = svg.append('g')
+			.attr("class", "axis")
+			.attr('transform', "translate(" + width/2 + "," + height + ")" + "rotate(" + 0 + "," + 0 + "," + 0 + ")")
+			.call(yAxis);
+			
+		/* Display the negative x axis */
+		/* Negative X axis displays the count of women managers */
+		var nXAxis = svg.append('g')
+			.attr("class", "axis")
+			.attr('transform', "translate(" + width/2 + "," + height + ")" + "rotate(" + 0 + "," + 0 + "," + 0 + ")")
+			.call(wXAxis)
+			.selectAll("text")
+			.attr("transform","rotate(90)")
+			.attr("x","10")
+			.attr("y","0")
+			.style("text-anchor","start");
+			
+		/* Display the count and average pay for men */
+		/* This is displayed as a rectangle with width as manager count */
+		/* and height as the weekly pay */
+		/* Initially this is 0 width and height */
+		var mRect = svg.append('g')
+			.attr('id','mRectg')
+			.attr('transform', "translate(" + width/2 + "," + height + ")" + "rotate(" + 0 + "," + 0 + "," + 0 + ")")
+			.append('rect')
+			.transition()
+			.duration(500)
+			.attr('x', 0)
+			.attr('y', 0)
+			.attr('width', 0)
+			.attr('height',0)
+			.style('fill', "rgb(0,120,180)")
+			.style('opacity', "0.6");
+
+		/* Display the count and average pay for women */
+		/* This is displayed as a rectangle with width as manager count */
+		/* and height as the weekly pay */
+		/* Initially this is 0 width and height */
+		var wRect = svg.append('g')
+			.attr('id','wRectg')
+			.attr('transform', "translate(" + width/2 + "," + height + ")" + "rotate(" + 0 + "," + 0 + "," + 0 + ")")
+			.append('rect')
+			.transition()
+			.duration(500)
+			.attr('x', 0)
+			.attr('y', 0)
+			.attr('width', 0)
+			.attr('height', 0)
+			.style('fill', "rgb(0,180,220)")
+			.style('opacity', "0.6");
+		
+		/* Display titles for the axes */
+		var xTitle = svg.append('text')
+			.attr('class','title')
+			.attr('id','xTitle')
+			.attr('transform', "translate(" + 3 * width/4 + "," + height + ")" + "rotate(" + 0 + "," + 0 + "," + 0 + ")")
+			.attr('dy','4em')
+			.style('fill', "black")
+			.style ("text-anchor", "middle")
+			.text ("Men Count");
+			
+		var yTitle = svg.append('text')
+			.attr('class','title')
+			.attr('id','yTitle')
+			.attr('transform', "translate(" + width/2 + "," + height/2 + ")" + "rotate(" + -90 + "," + 0 + "," + 0 + ")")
+			.attr('dy','1em')
+			.style('fill', 'black')
+			.text ("Weekly earnings $")
+			.style ("text-anchor", "middle");
+			
+		var nxTitle = svg.append('text')
+			.attr('class','title')
+			.attr('id','nxTitle')
+			.attr('transform', "translate(" + width/4 + "," + height + ")" + "rotate(" + 0 + "," + 0 + "," + 0 + ")")
+			.attr('dy','4em')
+			.style('fill', 'black')
+			.text ("Women Count")
+			.style ("text-anchor", "middle");
+		
+		/* Display the quarter and year for the values in the graph */
+		var Timeperiod = svg.append('text')
+			.attr('class','quarter')
+			.attr('id', 'quartyear')
+			.attr('transform', "translate(" + width/4 + "," + margin +")")
+			.text ("")
+			.style('text-anchor', 'start');
+		
+		// The function takes a single row of data and updates the chart 
+		function draw_onechart(one_row) {
+				
+			/* Calculate the height, width and position of the two rectangles */
+			var mx = 0;
+			var my = Yscale(one_row['Mpay']);
+			var mwidth = Xscale(one_row['Mcount']);
+			var mheight = -Yscale(one_row['Mpay']);
+			var wx = nXscale(one_row['Wcount']);
+			var wy = Yscale(one_row['Wpay']);
+			var wwidth = Xscale(one_row['Wcount']);
+			var wheight = -Yscale(one_row['Wpay']);
+			
+			d3.select("#quartyear")
+			.transition()
+			.duration(100)
+			.text(one_row['Year'] + " " + one_row['Quarter'] )
+				
+			/* Update the size and position of the rectangles */
+			mRect = d3.select("#mRectg")
+				.select('rect')
+				.transition()
+                .duration(500)
+				.attr('x', mx)
+				.attr('y', my)
+				.attr('width', mwidth)
+				.attr('height', mheight);
+				
+
+			wRect = d3.select("#wRectg")
+				.select('rect')
+				.transition()
+                .duration(500)
+				.attr('x', wx)
+				.attr('y', wy)
+				.attr('width', wwidth)
+				.attr('height', wheight);
+				
+		}
+					
+		/* Use the function above to animate the change in count */
+		/* of men and women managers and pay from one quarter to */
+		/* the next */
+		var quart_idx = 0;
+		var quarter_repeat = setInterval(function() {
+				
+			draw_onechart(gender_data[quart_idx]);
+			quart_idx++;
+			if (quart_idx >= gender_data.length) {
+				clearInterval(quarter_repeat);
+				}
+		}
+		, 1500);
+
+		/* After animation is complete, allow the user */
+		/* to select any quarter from the dropdown list */
+		var options = select
+		  .selectAll('option')
+			.data(quart_option)
+			.enter()
+			.append('option')
+				.text(function (d) { return d; })
+				.attr('value', function(d,i) {
+					return i;
+					}
+				);
+
+		/* Update chart based on selected option */
+		function onselect() {
+			debugger;
+			var selectList = d3.select('select');
+			var selectValue = selectList.node().value;
+			draw_onechart(gender_data[selectValue]);
+		}
+      }
+    </script>
+  </head>
+<body>
+  <script type="text/javascript">
+  /* Use D3 to load the tsv file */
+    
+d3.tsv("ManagersCountnPay.tsv", function(d) {
+        d['Wcount'] = +d['Wcount'];
+        d['Wpay'] = +d['Wpay'];
+		d['Mcount'] = +d['Mcount'];
+		d['Mpay'] = +d['Mpay'];
+		d['Period'] = d['Quarter'] + " " + d['Year'];
+        return d;
+      }, draw);
+  </script>
+</body>
+</html>
