@@ -15,8 +15,8 @@
 	
 ###	Animation
 	The graph is animated for data across the last 10 yrs. It displays values for each 
-	quarter over this time period. I also allowed the user to interact with the data using
-	a drop down list. The user can select the quarter for which the data is to be displayed.
+	year over this time period. I also allowed the user to interact with the data using
+	a drop down list. The user can select the year for which the data is to be displayed.
 	
 ###	Feedback
 	The data drives the point that over years the count of men and women managers in the 
