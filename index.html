@@ -296,7 +296,7 @@
   <script type="text/javascript">
   /* Use D3 to load the tsv file */
     
-d3.tsv("https://rawgit.com/virenpherwani/gender_pay_compare/master/ManagersCountnPay.tsv", function(d) {
+d3.tsv("./ManagersCountnPay.tsv", function(d) {
         d['Wcount'] = +d['Wcount'];
         d['Wpay'] = +d['Wpay'];
 		d['Mcount'] = +d['Mcount'];
